@@ -29,9 +29,9 @@ public class WorkerController {
 
 
     @RequestMapping(value = "/workers/{workerId}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> getCorporate(@PathVariable("workerId") Long workerId) {
+    public ResponseEntity<Object> getCorporate(@PathVariable("workerId") Long workerId) {
         Worker worker = workerRepository.findWorkerByWorkerId(workerId);
         workerRepository.delete(worker);
-        return new ResponseEntity<String>("Worker with id =" + workerId + " is deleted.", HttpStatus.OK);
+        return new ResponseEntity<Object>(worker, HttpStatus.OK);
     }
 }
