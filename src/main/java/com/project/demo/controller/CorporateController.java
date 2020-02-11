@@ -258,6 +258,12 @@ public class CorporateController {
         if(!automobilesOfWorkerRepository.existsAutomobileOfWorkerByAutomobileAndWorker(automobile, worker)) {
             Map<String, Object> body = new HashMap<>();
             body.put("error", "Vehicle is not assigned for the worker.");
+            request.setCorporate(corporate);
+            request.setWorker(worker);
+            request.setAutomobile(automobile);
+            request.setVendor(null);
+            request.setResult(false);
+            requestRepository.save(request);
             return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
         }
 
