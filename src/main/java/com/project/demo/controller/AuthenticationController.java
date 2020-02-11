@@ -5,6 +5,7 @@ import com.project.demo.dto.RegisterCredentialsCorporate;
 import com.project.demo.model.Corporate;
 import com.project.demo.model.User;
 import com.project.demo.repository.CorporateRepository;
+import com.project.demo.repository.WorkerRepository;
 import com.project.demo.security.JwtTokenProvider;
 import com.project.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class AuthenticationController {
     @Autowired
     private CorporateRepository corporateRepository;
 
+    @Autowired
+    private WorkerRepository workerRepository;
+
     public AuthenticationController(AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
@@ -71,6 +75,32 @@ public class AuthenticationController {
         Map<String, Object> body = new HashMap<>();
         body.put("Authorization", "Bearer " + jwtToken);
         body.put("Corporate", corporateRepository.findCorporateByCorporateEmail(loggedInUser.getEmail()));
+        return new ResponseEntity<Object>(body, HttpStatus.OK);
+    }
+
+    @PostMapping("/workerLogin")
+    public ResponseEntity<Object> loginWorker(@RequestBody LoginCredentials data) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                new UsernamePasswordAuthenticationToken(data.getUsername(), data.getPassword());
+
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwtToken = jwtTokenProvider.generateJwtToken(authentication);
+
+
+        String username = "";
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails)principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+        User loggedInUser = userService.findUserByUsername(username);
+        Map<String, Object> body = new HashMap<>();
+        body.put("Authorization", "Bearer " + jwtToken);
+        body.put("Worker", workerRepository.findWorkerByWorkerUsername(username));
         return new ResponseEntity<Object>(body, HttpStatus.OK);
     }
 
