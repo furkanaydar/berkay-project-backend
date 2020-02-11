@@ -11,4 +11,5 @@ import java.util.List;
 public interface WorkerRepository extends JpaRepository<Worker, Long> {
     List<Worker> findWorkersByCorporate(Corporate corporate);
     Worker findWorkerByWorkerId(Long workerId);
+    Worker findWorkerByWorkerUsername(String workerUsername);
 }
