@@ -186,7 +186,9 @@ public class CorporateController {
         worker.setNumberOfAssignedCars(currentAssignedCarNumber + 1);
         AutomobileOfWorker automobileOfWorker = new AutomobileOfWorker(automobile, worker);
         automobilesOfWorkerRepository.save(automobileOfWorker);
-        return new ResponseEntity<Object>("success", HttpStatus.OK);
+        List<AutomobileOfWorker> automobileOfWorkers = automobilesOfWorkerRepository
+                .findAutomobileOfWorkersByWorker(worker);
+        return new ResponseEntity<Object>(automobileOfWorkers, HttpStatus.OK);
 
     }
 
