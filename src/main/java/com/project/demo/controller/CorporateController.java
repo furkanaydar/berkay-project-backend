@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -221,6 +223,63 @@ public class CorporateController {
         Corporate corporate = corporateRepository.findCorporateByCorporateId(corporateId);
         List<Request> requests = requestRepository.findRequestsByCorporate(corporate);
         return new ResponseEntity<Object>(requests, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/vehicles/{vehicleLicensePlate}/requests",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> registerRequestLessParams(
+            @PathVariable("vehicleLicensePlate") String vehicleLicensePlate,
+            @RequestBody Request request
+    ) {
+        String username = "";
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails)principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+        if(null == username || username.length() == 0) {
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+        Worker worker = workerRepository.findWorkerByWorkerUsername(username);
+        if(null == worker) {
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+        Corporate corporate = worker.getCorporate();
+        Long corporateId = corporate.getCorporateId();
+        Automobile automobile = automobileRepository.findAutomobileByAutomobileLicensePlate(vehicleLicensePlate);
+        if(automobile == null || automobile.getCorporate().getCorporateId() != corporateId) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("error", "unknown vehicle");
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+        if(!automobilesOfWorkerRepository.existsAutomobileOfWorkerByAutomobileAndWorker(automobile, worker)) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("error", "Vehicle is not assigned for the worker.");
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+
+        Vendor closestVendor = geocodeApiService.findClosestVendor(corporate, request.getVendorLat(), request.getVendorLong());
+        if(closestVendor != null) {
+            request.setCorporate(corporate);
+            request.setWorker(worker);
+            request.setAutomobile(automobile);
+            request.setVendor(closestVendor);
+            request.setResult(true);
+            requestRepository.save(request);
+            return new ResponseEntity<Object>(request, HttpStatus.OK);
+        }
+        request.setCorporate(corporate);
+        request.setWorker(worker);
+        request.setAutomobile(automobile);
+        request.setVendor(null);
+        request.setResult(false);
+        requestRepository.save(request);
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Your location does not match of any known stations.");
+        return new ResponseEntity<Object>(body, HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/corporates/{corporateId}/workers/{workerId}/vehicles/{vehicleLicensePlate}/requests",
