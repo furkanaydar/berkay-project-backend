@@ -34,6 +34,34 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+        List<String> origins = new ArrayList<>();
+        origins.add("*");
+        List<String> methods = new ArrayList<>();
+        origins.add("GET");
+        origins.add("POST");
+        origins.add("PUT");
+        origins.add("DELETE");
+        List<String> allowedHeaders = new ArrayList<>();
+        allowedHeaders.add("Authorization");
+        allowedHeaders.add("Content-Type");
+        allowedHeaders.add("Cache-Control");
+
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedMethods(methods);
+        // setAllowCredentials(true) is important, otherwise:
+        // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
+        configuration.setAllowCredentials(true);
+        // setAllowedHeaders is important! Without it, OPTIONS preflight request
+        // will fail with 403 Invalid CORS request
+        configuration.setAllowedHeaders(allowedHeaders);
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
