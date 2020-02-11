@@ -76,6 +76,22 @@ public class CorporateController {
         return automobileRepository.findAutomobilesByCorporate(corporate);
     }
 
+    @RequestMapping(value = "/corporates/{corporateId}/automobiles/{automobileId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteAutomobileOfCorporate(
+            @PathVariable("corporateId") Long corporateId,
+            @PathVariable("automobileId") Long automobileId) {
+        Automobile automobile = automobileRepository.findAutomobileByAutomobileId(automobileId);
+        List<AutomobileOfWorker> automobileOfWorkers = automobilesOfWorkerRepository.findAutomobileOfWorkersByAutomobile(automobile);
+        for(int i=0 ; i<automobileOfWorkers.size() ; i++) {
+            Worker worker = automobileOfWorkers.get(i).getWorker();
+            int currentNumberOfAutos = worker.getNumberOfAssignedCars();
+            worker.setNumberOfAssignedCars(currentNumberOfAutos - 1);
+            workerRepository.save(worker);
+        }
+        automobileRepository.delete(automobile);
+        return new ResponseEntity<String>("Automobile with id =" + automobileId + " is deleted.", HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/corporates/{corporateId}/automobiles",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE,
@@ -88,14 +104,7 @@ public class CorporateController {
         automobileRepository.save(automobile);
         return new ResponseEntity<Automobile>(automobile, HttpStatus.OK);
     }
-    @RequestMapping(value = "/corporates/{corporateId}/automobiles/{automobileId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteAutomobileOfCorporate(
-            @PathVariable("corporateId") Long corporateId,
-            @PathVariable("automobileId") Long automobileId) {
-        Automobile automobile = automobileRepository.findAutomobileByAutomobileId(automobileId);
-        automobileRepository.delete(automobile);
-        return new ResponseEntity<String>("Automobile with id =" + automobileId + " is deleted.", HttpStatus.OK);
-    }
+
     @RequestMapping(value = "/corporates/{corporateId}/workers", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Worker> getWorkersOfCorporate(@PathVariable("corporateId") Long corporateId) {
