@@ -70,7 +70,7 @@ public class GeocodeApiServiceImpl {
                closestVendor = vendor;
            }
        }
-       if(maxDist < 0.15) {
+       if(maxDist < 1) {
            return closestVendor;
        }
        return null;
