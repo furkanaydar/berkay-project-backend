@@ -214,7 +214,7 @@ public class CorporateController {
         Corporate corporate = corporateRepository.findCorporateByCorporateId(corporateId);
         VendorOfCorporate vendorOfCorporate = new VendorOfCorporate(corporate, vendor);
         vendorOfCorporateRepository.save(vendorOfCorporate);
-        return new ResponseEntity<Object>(vendor, HttpStatus.OK);
+        return new ResponseEntity<Object>(vendorOfCorporate, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/corporates/{corporateId}/requests",
