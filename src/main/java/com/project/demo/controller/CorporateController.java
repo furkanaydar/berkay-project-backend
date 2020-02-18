@@ -204,7 +204,7 @@ public class CorporateController {
     @RequestMapping(value = "/corporates/{corporateId}/vendors",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public void createVendorForCorporate(
+    public ResponseEntity<Object> createVendorForCorporate(
             @PathVariable("corporateId") Long corporateId,
             @RequestBody Vendor vendor) throws InterruptedException, ApiException, IOException {
         List<String> result = geocodeApiService.generate(vendor.getVendorAddress());
@@ -214,6 +214,7 @@ public class CorporateController {
         Corporate corporate = corporateRepository.findCorporateByCorporateId(corporateId);
         VendorOfCorporate vendorOfCorporate = new VendorOfCorporate(corporate, vendor);
         vendorOfCorporateRepository.save(vendorOfCorporate);
+        return new ResponseEntity<Object>(vendor, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/corporates/{corporateId}/requests",
