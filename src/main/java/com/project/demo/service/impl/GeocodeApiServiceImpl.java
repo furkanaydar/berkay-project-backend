@@ -30,7 +30,7 @@ public class GeocodeApiServiceImpl {
 
 
    public GeocodeApiServiceImpl() {
-       this.context = new GeoApiContext.Builder().apiKey("AIzaSyABCo6EZZjZkhRjx94pRAlJ5wo5SSlWjbU").build();
+       this.context = new GeoApiContext.Builder().apiKey("AIzaSyAmI5eCvq_mpHjjljZ6XfVdGoyX1mtZ51A").build();
    }
 
    public List<String> generate(String address) throws InterruptedException, ApiException, IOException {
